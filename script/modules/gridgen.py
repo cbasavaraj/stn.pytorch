@@ -1,7 +1,10 @@
-from torch.nn.modules.module import Module
+
+import numpy as np
+
 import torch
 from torch.autograd import Variable
-import numpy as np
+from torch.nn.modules.module import Module
+
 from functions.gridgen import AffineGridGenFunction, CylinderGridGenFunction
 
 import pyximport
@@ -10,7 +13,7 @@ pyximport.install(setup_args={"include_dirs":np.get_include()},
 
 
 class AffineGridGen(Module):
-    def __init__(self, height, width, lr = 1, aux_loss = False):
+    def __init__(self, height, width, lr=1, aux_loss=False):
         super(AffineGridGen, self).__init__()
         self.height, self.width = height, width
         self.aux_loss = aux_loss
@@ -20,16 +23,16 @@ class AffineGridGen(Module):
         if not self.aux_loss:
             return self.f(input)
         else:
-            identity = torch.from_numpy(np.array([[1,0,0], [0,1,0]], dtype=np.float32))
-            batch_identity = torch.zeros([input.size(0), 2,3])
+            identity = torch.from_numpy(np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32))
+            batch_identity = torch.zeros([input.size(0), 2, 3])
             for i in range(input.size(0)):
                 batch_identity[i] = identity
             batch_identity = Variable(batch_identity)
             loss = torch.mul(input - batch_identity, input - batch_identity)
-            loss = torch.sum(loss,1)
-            loss = torch.sum(loss,2)
+            loss = torch.sum(loss, 1)
+            loss = torch.sum(loss, 1)
 
-            return self.f(input), loss.view(-1,1)
+            return self.f(input), loss.view(-1, 1)
 
 class CylinderGridGen(Module):
     def __init__(self, height, width, lr = 1, aux_loss = False):
